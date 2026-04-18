@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TESSERA Explorer</title>
+  <title>Forest Embeddings Explorer</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
   <link rel="stylesheet" href="/static/css/style.css"/>
 </head>
@@ -11,7 +11,7 @@
 
 <!-- ── TOPBAR ────────────────────────────────────────────────────────────── -->
 <div id="topbar">
-  <div class="logo">TESSERA <span>Explorer</span></div>
+  <div class="logo">Forest Embeddings <span>Explorer</span></div>
   <div class="topbar-steps">
     <div class="step-pill active">1 · Draw Area</div>
     <div class="step-pill">2 · Load Tile</div>
@@ -91,7 +91,7 @@
           <button class="btn primary" id="btn-add-exemplar">⊕ Add Exemplar</button>
           <button class="btn" id="btn-stop-exemplar">✓ Done</button>
         </div>
-        <div class="exemplar-list" id="exemplar-list">
+        <div class="sub-scroll" id="exemplar-list">
           <div style="font-size:11px;color:var(--muted);padding:4px 0;">No exemplars yet</div>
         </div>
       </div>
@@ -133,10 +133,12 @@
         </div>
         <div class="card accent" id="status-results"></div>
 
-        <div class="legend-row">
-          <span class="legend-chip" style="background:hsl(120,90%,40%);">▮</span> most similar
-          <span class="legend-chip" style="background:hsl(60,90%,45%);margin-left:8px;">▮</span> mid
-          <span class="legend-chip" style="background:hsl(0,90%,50%);margin-left:8px;">▮</span> least
+        <div class="sim-legend">
+          <div class="sim-legend-bar"></div>
+          <div class="sim-legend-labels">
+            <span>least similar</span>
+            <span>most similar</span>
+          </div>
         </div>
 
         <div style="font-size:10px;color:var(--muted);margin:10px 0 4px;">Distance distribution (0 → 128 bits)</div>
@@ -166,7 +168,7 @@
           <label class="ref-col-label">Label column</label>
           <select id="ref-col-select" class="ref-col-select"></select>
         </div>
-        <div class="ref-legend" id="ref-legend"></div>
+        <div class="sub-scroll" id="ref-legend" style="display:none;"></div>
       </div>
 
     </div>

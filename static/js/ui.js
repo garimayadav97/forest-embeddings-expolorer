@@ -225,13 +225,15 @@ const UI = (() => {
     // Legend
     const counts = {};
     points.forEach(p => { counts[p.label || '—'] = (counts[p.label || '—'] || 0) + 1; });
-    $('#ref-legend').innerHTML = Object.entries(counts).map(([label, n]) =>
+    const legend = $('#ref-legend');
+    legend.innerHTML = Object.entries(counts).map(([label, n]) =>
       `<div class="ref-legend-item">
         <div class="ref-legend-dot" style="background:${labelColor(label)};"></div>
         <span style="flex:1;">${label}</span>
         <span class="ref-legend-count">${n}</span>
       </div>`
     ).join('');
+    legend.style.display = 'block';
   }
 
   // ── reference file upload ────────────────────────────────────────────

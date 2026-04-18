@@ -112,7 +112,7 @@ const MAP = (() => {
 
   function addExemplar(lat, lon) {
     const icon = L.divIcon({
-      className: '', iconSize: [12, 12], iconAnchor: [6, 6],
+      className: '', iconSize: [16, 16], iconAnchor: [8, 8],
       html: '<div class="exemplar-marker"></div>',
     });
     const m = L.marker([lat, lon], { icon }).addTo(map);
