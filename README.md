@@ -1,4 +1,4 @@
-# TESSERA Explorer
+# Forest Embeddings Explorer
 
 An interactive web tool for forest habitat similarity search using [TESSERA](https://github.com/anthropics/geotessera) satellite-derived forest embeddings. Draw a study polygon on a satellite map, click reference pixels anywhere on the map as exemplars, and instantly find all pixels within your polygon that share similar forest structure — ranked by cosine similarity.
 
@@ -24,29 +24,27 @@ TESSERA encodes satellite imagery into 128-dimensional embeddings that capture f
 ```
 Browser                          Flask backend (localhost:5001)
 ───────                          ──────────────────────────────
-Draw polygon          ──POST──▶  /api/tile
+Draw polygon          POST         /api/tile
                                    fetch_mosaic_for_region(bbox)
                                    crop to polygon bbox at native res
                                    downsample to ≤128×128
                                    cache embeddings (UUID tile_id)
-                      ◀── JSON ──  tile_id, bounds, dimensions
+                      returns      tile_id, bounds, dimensions
 
-Click exemplar        ──POST──▶  /api/embedding
+Click exemplar        POST         /api/embedding
                                    sample_embeddings_at_points(lon, lat)
-                      ◀── JSON ──  128-d float vector
+                      returns      128-d float vector
 
-Run similarity        ──POST──▶  /api/similarity
+Run similarity        POST         /api/similarity
                                    load tile from cache
                                    filter pixels inside polygon (ray cast)
                                    L2-normalise embeddings
                                    cosine similarity vs exemplars
                                    threshold + histogram
-                      ◀── JSON ──  similar_pixels [{idx, sim}]
+                      returns      similar_pixels [{idx, sim}]
 ```
 
-Embeddings never leave the server — only a `tile_id` and metadata are sent to the browser, keeping responses small even for large tiles.
 
----
 
 ## Project structure
 
