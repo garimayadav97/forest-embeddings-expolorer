@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TESSERA Explorer</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+  <link rel="stylesheet" href="/static/css/style.css"/>
+</head>
+<body>
+
+<!-- ── TOPBAR ────────────────────────────────────────────────────────────── -->
+<div id="topbar">
+  <div class="logo">TESSERA <span>Explorer</span></div>
+  <div class="topbar-steps">
+    <div class="step-pill active">1 · Draw Area</div>
+    <div class="step-pill">2 · Load Tile</div>
+    <div class="step-pill">3 · Set Exemplars</div>
+    <div class="step-pill">4 · Similarity</div>
+  </div>
+  <div id="search-box">
+    <span class="search-icon">⌕</span>
+    <input id="search-input" type="text" placeholder="Search location…" autocomplete="off">
+    <div id="search-results"></div>
+  </div>
+
+  <div class="topbar-right">
+    <div class="badge live" id="server-badge">● connecting…</div>
+    <div class="badge" id="source-badge">—</div>
+  </div>
+</div>
+
+<!-- ── WORKSPACE ─────────────────────────────────────────────────────────── -->
+<div id="workspace">
+
+  <!-- LEFT PANEL — inputs -->
+  <div id="panel-left" class="panel">
+    <div class="panel-label">INPUTS</div>
+    <div class="panel-scroll">
+
+      <!-- Forest mask -->
+      <div class="section">
+        <div class="section-header">
+          <div class="section-num" style="font-size:9px;">🌲</div>
+          <div class="section-title">Forest Mask</div>
+        </div>
+        <div class="section-sub">Load OSM forest areas for the current map view. Drawing is restricted to forested pixels.</div>
+        <div class="btn-row">
+          <button class="btn primary" id="btn-load-forest">⊕ Load Mask</button>
+          <button class="btn" id="btn-clear-forest">✕ Clear</button>
+        </div>
+        <div id="status-forest" class="card muted" style="display:none;"></div>
+      </div>
+
+      <hr class="divider">
+
+      <div class="section step-section" data-step="0">
+        <div class="section-header">
+          <div class="section-num active">1</div>
+          <div class="section-title">Draw Study Area</div>
+        </div>
+        <div class="section-sub">Click vertices on the map to define your polygon. Double-click to close.</div>
+        <div class="btn-row">
+          <button class="btn primary" id="btn-draw">✦ Draw Polygon</button>
+          <button class="btn" id="btn-finish-poly">✓ Finish</button>
+        </div>
+        <button class="btn" id="btn-clear" style="opacity:0.5;">⌫ Clear All</button>
+      </div>
+
+      <hr class="divider">
+
+      <div class="section step-section" data-step="1" style="display:none;">
+        <div class="section-header">
+          <div class="section-num">2</div>
+          <div class="section-title">TESSERA Tile</div>
+        </div>
+        <div class="card muted" id="status-tile">Waiting for polygon…</div>
+      </div>
+
+      <hr class="divider step-section" data-step="1" style="display:none;">
+
+      <div class="section step-section" data-step="2" style="display:none;">
+        <div class="section-header">
+          <div class="section-num">3</div>
+          <div class="section-title">Set Exemplars</div>
+        </div>
+        <div class="section-sub">
+          Click pixels <strong>anywhere on the map</strong> to set reference exemplars.
+        </div>
+        <div class="btn-row">
+          <button class="btn primary" id="btn-add-exemplar">⊕ Add Exemplar</button>
+          <button class="btn" id="btn-stop-exemplar">✓ Done</button>
+        </div>
+        <div class="exemplar-list" id="exemplar-list">
+          <div style="font-size:11px;color:var(--muted);padding:4px 0;">No exemplars yet</div>
+        </div>
+      </div>
+
+      <hr class="divider step-section" data-step="2" style="display:none;">
+
+      <div class="section step-section" data-step="3" style="display:none;">
+        <div class="section-header">
+          <div class="section-num">4</div>
+          <div class="section-title">Similarity Search</div>
+        </div>
+        <div class="slider-row">
+          <label>Min similarity</label>
+          <input type="range" id="slider-threshold" min="0" max="100" value="60">
+          <span class="slider-val" id="threshold-val">0.60</span>
+        </div>
+        <button class="btn primary" id="btn-run">▶ Run Search</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- MAP -->
+  <div id="map">
+    <div id="map-container"></div>
+    <div class="mode-tip" id="mode-tip" style="opacity:0;"></div>
+  </div>
+
+  <!-- RIGHT PANEL — outputs -->
+  <div id="panel-right" class="panel">
+    <div class="panel-label">OUTPUTS</div>
+    <div class="panel-scroll">
+
+      <!-- Similarity results -->
+      <div class="section" id="results-section" style="display:none;">
+        <div class="section-header">
+          <div class="section-num active">✓</div>
+          <div class="section-title">Results</div>
+        </div>
+        <div class="card accent" id="status-results"></div>
+
+        <div class="legend-row">
+          <span class="legend-chip" style="background:hsl(120,90%,40%);">▮</span> most similar
+          <span class="legend-chip" style="background:hsl(60,90%,45%);margin-left:8px;">▮</span> mid
+          <span class="legend-chip" style="background:hsl(0,90%,50%);margin-left:8px;">▮</span> least
+        </div>
+
+        <div style="font-size:10px;color:var(--muted);margin:10px 0 4px;">Distance distribution (0 → 128 bits)</div>
+        <div class="histogram" id="histogram"></div>
+
+      </div>
+
+      <hr class="divider" id="results-divider" style="display:none;">
+
+      <!-- Reference data -->
+      <div class="section">
+        <div class="section-header">
+          <div class="section-num" style="font-size:9px;">opt</div>
+          <div class="section-title">Reference Data</div>
+        </div>
+        <div class="section-sub">
+          Load a CSV or Excel file with <code>lat</code>, <code>lon</code>, and <code>species</code> / <code>label</code> columns.
+        </div>
+        <div class="ref-upload" id="ref-upload-area">
+          <input type="file" id="ref-file" accept=".csv,.xlsx,.xls">
+          <div class="icon">📂</div>
+          <p>Click to load CSV / Excel</p>
+          <p style="margin-top:4px;font-size:10px;">lat · lon · any label columns</p>
+        </div>
+        <div class="card" id="status-ref" style="display:none;"></div>
+        <div id="ref-col-wrap" style="display:none;">
+          <label class="ref-col-label">Label column</label>
+          <select id="ref-col-select" class="ref-col-select"></select>
+        </div>
+        <div class="ref-legend" id="ref-legend"></div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="/static/js/map.js"></script>
+<script src="/static/js/tessera.js"></script>
+<script src="/static/js/similarity.js"></script>
+<script src="/static/js/ui.js"></script>
+<script>
+  // ── Location search (Nominatim) ──────────────────────────────────────────
+  (() => {
+    const input   = document.getElementById('search-input');
+    const results = document.getElementById('search-results');
+    let debounce;
+
+    input.addEventListener('input', () => {
+      clearTimeout(debounce);
+      const q = input.value.trim();
+      if (q.length < 3) { results.style.display = 'none'; return; }
+      debounce = setTimeout(() => geocode(q), 350);
+    });
+
+    input.addEventListener('keydown', e => {
+      if (e.key === 'Escape') { results.style.display = 'none'; input.blur(); }
+    });
+
+    document.addEventListener('click', e => {
+      if (!e.target.closest('#search-box')) results.style.display = 'none';
+    });
+
+    async function geocode(q) {
+      try {
+        const url = `https://nominatim.openstreetmap.org/search?format=json&limit=5&q=${encodeURIComponent(q)}`;
+        const data = await fetch(url, { headers: { 'Accept-Language': 'en' } }).then(r => r.json());
+        if (!data.length) {
+          results.innerHTML = '<div class="search-result-item" style="color:var(--muted);">No results found</div>';
+          results.style.display = 'block';
+          return;
+        }
+        results.innerHTML = data.map((item, i) =>
+          `<div class="search-result-item" data-i="${i}">
+            ${item.display_name.split(',').slice(0, 2).join(',')}
+            <div class="result-type">${item.type} · ${item.display_name.split(',').slice(-2).join(',').trim()}</div>
+          </div>`
+        ).join('');
+        results.style.display = 'block';
+        results.querySelectorAll('.search-result-item').forEach((el, i) => {
+          el.addEventListener('click', () => {
+            const { lat, lon, boundingbox } = data[i];
+            if (boundingbox) {
+              MAP.map && MAP.map.flyToBounds([
+                [+boundingbox[0], +boundingbox[2]],
+                [+boundingbox[1], +boundingbox[3]],
+              ], { duration: 1 });
+            } else {
+              MAP.map && MAP.map.flyTo([+lat, +lon], 13, { duration: 1 });
+            }
+            input.value = data[i].display_name.split(',').slice(0, 2).join(',');
+            results.style.display = 'none';
+          });
+        });
+      } catch { /* network error — silently ignore */ }
+    }
+  })();
+
+  fetch('http://localhost:5001/health')
+    .then(r => r.json())
+    .then(d => {
+      const b = document.getElementById('server-badge');
+      b.textContent = '● online';
+      b.className   = 'badge live';
+      document.getElementById('source-badge').textContent = d.tessera ? 'TESSERA real' : 'synthetic';
+    })
+    .catch(() => {
+      const b = document.getElementById('server-badge');
+      b.textContent = '● offline';
+      b.style.borderColor = 'var(--danger)';
+      b.style.color       = 'var(--danger)';
+    });
+</script>
+</body>
+</html>

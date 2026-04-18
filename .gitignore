@@ -1,0 +1,16 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.env
+venv/
+.venv/
+*.egg-info/
+
+# Large TESSERA data directories (too big for GitHub)
+global_0.1_degree_representation/
+global_0.1_degree_tiff_all/
+
+# OS
+.DS_Store
+Thumbs.db
