@@ -14,3 +14,5 @@ global_0.1_degree_tiff_all/
 # OS
 .DS_Store
 Thumbs.db
+
+.claude
