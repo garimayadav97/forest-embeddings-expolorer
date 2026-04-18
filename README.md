@@ -1,10 +1,14 @@
+
+
+
+
 # Forest Embeddings Explorer
 
 An interactive web tool for forest habitat similarity search using [TESSERA](https://github.com/ucam-eo/geotessera) satellite-derived forest embeddings. Draw a study polygon on a satellite map, click reference pixels anywhere on the map as exemplars, and instantly find all pixels within your polygon that share similar forest structure — ranked by cosine similarity.
 
 ![workflow](https://img.shields.io/badge/status-active-brightgreen) ![python](https://img.shields.io/badge/python-3.9%2B-blue) ![flask](https://img.shields.io/badge/flask-3.x-lightgrey)
 
-<video src="examples/demo.mp4" controls width="100%"></video>
+[<video src="examples/demo.mp4" controls width="100%"></video>](https://github.com/user-attachments/assets/62b7f119-b8be-4724-a92f-43d06c0957ec)
 
 ---
 
